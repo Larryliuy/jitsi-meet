@@ -1,6 +1,7 @@
 // @flow
+export * from './functions';
 
-import { Dropbox } from 'dropbox';
+import { getDisplayName, getSpaceUsage } from './functions';
 
 const logger = require('jitsi-meet-logger').getLogger(__filename);
 
@@ -15,19 +16,13 @@ export function getDropboxData(
         token: string,
         clientId: string
 ): Promise<?Object> {
-    const dropboxAPI = new Dropbox({
-        accessToken: token,
-        clientId
-    });
-
     return Promise.all(
-        [ dropboxAPI.usersGetCurrentAccount(), dropboxAPI.usersGetSpaceUsage() ]
-    ).then(([ account, space ]) => {
-        const { allocation, used } = space;
-        const { allocated } = allocation;
+        [ getDisplayName(token, clientId), getSpaceUsage(token, clientId) ]
+    ).then(([ userName, space ]) => {
+        const { allocated, used } = space;
 
         return {
-            userName: account.name.display_name,
+            userName,
             spaceLeft: Math.floor((allocated - used) / 1048576)// 1MiB=1048576B
         };
 
